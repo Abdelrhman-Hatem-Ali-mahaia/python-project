@@ -1,0 +1,119 @@
+import csv
+
+class Employee:
+    def __init__(self, emp_id, name, position, salary, email):
+        self.emp_id = emp_id
+        self.name = name
+        self.position = position
+        self.salary = salary
+        self.email = email
+
+    def display(self):
+        return f"ID: {self.emp_id}, Name: {self.name}, Position: {self.position}, Salary: {self.salary}, Email: {self.email}"
+
+class EmployeeManager:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def load_data(self):
+        employees = []
+        try:
+            with open(self.filename, mode='r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    employees.append(Employee(row['ID'], row['Name'], row['Position'], float(row['Salary']), row['Email']))
+        except FileNotFoundError:
+            print("File not found. Starting with an empty database.")
+        return employees
+
+    def save_data(self, employees):
+        with open(self.filename, mode='w', newline='') as file:
+            fieldnames = ['ID', 'Name', 'Position', 'Salary', 'Email']
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            for emp in employees:
+                writer.writerow({'ID': emp.emp_id, 'Name': emp.name, 'Position': emp.position, 'Salary': emp.salary, 'Email': emp.email})
+
+def add_employee(manager, employees):
+    emp_id = input("Enter ID: ")
+    name = input("Enter Name: ")
+    position = input("Enter Position: ")
+    salary = float(input("Enter Salary: "))
+    email = input("Enter Email: ")
+
+    new_emp = Employee(emp_id, name, position, salary, email)
+    employees.append(new_emp)
+    manager.save_data(employees)
+    print("Employee added successfully!")
+
+def list_employees(employees):
+    if employees:
+        for emp in employees:
+            print(emp.display())
+    else:
+        print("No employees found.")
+
+def update_employee(employees, emp_id):
+    for emp in employees:
+        if emp.emp_id == emp_id:
+            field = input("Enter field to update (name/position/salary/email): ").lower()
+            value = input("Enter new value: ")
+            if field == "salary":
+                value = float(value)
+            setattr(emp, field, value)
+            print("Employee updated successfully!")
+            return
+    print("Employee not found.")
+
+def delete_employee(employees, emp_id):
+    for emp in employees:
+        if emp.emp_id == emp_id:
+            employees.remove(emp)
+            print("Employee deleted successfully!")
+            return
+    print("Employee not found.")
+    
+def search_employee(employees, emp_id):
+    for emp in employees:
+        if emp.emp_id == emp_id:
+            print(emp.display())
+            return
+    print("Employee not found.")
+
+def main():
+    manager = EmployeeManager("employees.csv")
+    employees = manager.load_data()
+
+    while True:
+        print("\nEmployee Management System")
+        print("1. Add Employee")
+        print("2. List Employees")
+        print("3. Update Employee")
+        print("4. Delete Employee")
+        print("5. Search Employee")
+        print("6. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            add_employee(manager, employees)
+        elif choice == '2':
+            list_employees(employees)
+        elif choice == '3':
+            emp_id = input("Enter Employee ID to update: ")
+            update_employee(employees, emp_id)
+            manager.save_data(employees)
+        elif choice == '4':
+            emp_id = input("Enter Employee ID to delete: ")
+            delete_employee(employees, emp_id)
+            manager.save_data(employees)
+        elif choice == '5':
+            emp_id = input("Enter Employee ID to search: ")
+            search_employee(employees, emp_id)
+        elif choice == '6':
+            print("Exiting program. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
